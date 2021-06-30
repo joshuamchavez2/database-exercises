@@ -20,7 +20,7 @@ WHERE dept_manager.to_date > now() -- Looking for only the current department ma
 ORDER BY dept_name;
 /* Find the name of all departments currently managed by women. */
 
-SELECT dept_name, concat(first_name, " ", last_name) AS "Full Name", employees.emp_no, dept_manager.to_date, gender
+SELECT dept_name, concat(first_name, " ", last_name) AS "Full Name"
 FROM employees
 JOIN dept_manager 
 	ON dept_manager.emp_no = employees.emp_no
@@ -122,4 +122,17 @@ WHERE (salaries.to_date > now())
 GROUP BY first_name, last_name
 ORDER BY salary DESC
 LIMIT 1;
+
+
+
+
+
+
+
+
+
+
+
+
+
 	
