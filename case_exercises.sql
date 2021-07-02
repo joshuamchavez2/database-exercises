@@ -51,31 +51,62 @@ GROUP By 50s, 60s; -- grouping by 50s and 60s
 /* What is the current average salary for each of the following department groups: R&D, Sales & Marketing, Prod & QM, Finance & HR, Customer Service? */
 
 USE employees;
-SELECT dept_name,
+SELECT 
+	DISTINCT CASE
+	WHEN departments.dept_name = 'Customer Service' THEN "Customer Service"
+	WHEN departments.dept_name = 'Research' OR departments.dept_name = 'Development' THEN 'R&D'
+	WHEN departments.dept_name = 'Sales' OR departments.dept_name = 'Marketing' THEN 'Sales & Marketing'
+	WHEN departments.dept_name = 'Production' OR departments.dept_name = 'Quality Management' THEN 'Prod & QM'
+	WHEN departments.dept_name = 'Finance' OR departments.dept_name = 'Human Resources' THEN 'Finance & HR'
+	END AS 'Department_Groups',
 	CASE 
-	WHEN departments.dept_name = 'Customer Service' THEN (select avg(salary)
-FROM employees
-JOIN dept_emp
-ON dept_emp.emp_no = employees.emp_no
-JOIN salaries
-ON salaries.emp_no = employees.emp_no
-JOIN departments
-ON departments.dept_no = dept_emp.dept_no
-where departments.dept_name = 'Customer Service' and dept_emp.to_date > now())
-	ELSE NULL	END AS 'AVG Salary',
-
-	
-	CASE
-	WHEN departments.dept_name = 'Marketing' THEN (select avg(salary)
-FROM employees
-JOIN dept_emp
-ON dept_emp.emp_no = employees.emp_no
-JOIN salaries
-ON salaries.emp_no = employees.emp_no
-JOIN departments
-ON departments.dept_no = dept_emp.dept_no
-where departments.dept_name = 'Marketing' and dept_emp.to_date > now())
-	ELSE NULL	END AS 'AVG Salary'
+	WHEN departments.dept_name = 'Customer Service' THEN(
+			select avg(salary)
+			FROM employees
+			JOIN dept_emp
+				ON dept_emp.emp_no = employees.emp_no
+			JOIN salaries
+				ON salaries.emp_no = employees.emp_no
+			JOIN departments
+				ON departments.dept_no = dept_emp.dept_no
+			WHERE departments.dept_name = 'Customer Service' AND dept_emp.to_date > now())
+	WHEN departments.dept_name = 'Finance' OR departments.dept_name = 'Human Resources' THEN(
+			select avg(salary)
+			FROM employees
+			JOIN dept_emp
+				ON dept_emp.emp_no = employees.emp_no
+			JOIN salaries
+				ON salaries.emp_no = employees.emp_no
+			JOIN departments
+				ON departments.dept_no = dept_emp.dept_no
+			WHERE (departments.dept_name = 'Finance' OR departments.dept_name = 'Human Resources') AND (dept_emp.to_date > now()))
+	WHEN departments.dept_name = 'Production' OR departments.dept_name = 'Quality Management' THEN (select avg(salary)
+			FROM employees
+			JOIN dept_emp
+				ON dept_emp.emp_no = employees.emp_no
+			JOIN salaries
+				ON salaries.emp_no = employees.emp_no
+			JOIN departments
+				ON departments.dept_no = dept_emp.dept_no
+			WHERE (departments.dept_name = 'Production' OR departments.dept_name = 'Quality Management') AND dept_emp.to_date > now())
+	WHEN departments.dept_name = 'Sales' OR departments.dept_name = 'Marketing' THEN (select avg(salary)
+			FROM employees
+			JOIN dept_emp
+				ON dept_emp.emp_no = employees.emp_no
+			JOIN salaries
+				ON salaries.emp_no = employees.emp_no
+			JOIN departments
+				ON departments.dept_no = dept_emp.dept_no
+			WHERE (departments.dept_name = 'Sales' OR departments.dept_name = 'Marketing') AND dept_emp.to_date > now())
+	WHEN departments.dept_name = 'Research' OR departments.dept_name = 'Development' THEN (select avg(salary)
+			FROM employees
+			JOIN dept_emp
+				ON dept_emp.emp_no = employees.emp_no
+			JOIN salaries
+				ON salaries.emp_no = employees.emp_no
+			JOIN departments
+				ON departments.dept_no = dept_emp.dept_no
+			WHERE (departments.dept_name = 'Research' OR departments.dept_name = 'Development') AND dept_emp.to_date > now())	END AS 'AVG Salary'
 FROM employees
 JOIN dept_emp
 ON dept_emp.emp_no = employees.emp_no
@@ -84,20 +115,6 @@ ON salaries.emp_no = employees.emp_no
 JOIN departments
 ON departments.dept_no = dept_emp.dept_no
 Group By dept_name;
-
-
-select avg(salary)
-FROM employees
-JOIN dept_emp
-ON dept_emp.emp_no = employees.emp_no
-JOIN salaries
-ON salaries.emp_no = employees.emp_no
-JOIN departments
-ON departments.dept_no = dept_emp.dept_no
-where departments.dept_name = 'Marketing' and dept_emp.to_date > now();
-
-SELECTdept_name,COUNT(CASE	WHEN title = 'Senior Engineer' THEN title 
-	ELSE NULL	END) AS 'Senior Engineer'
 
 
 
