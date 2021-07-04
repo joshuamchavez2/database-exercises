@@ -3,7 +3,8 @@
 
 /* Write a query that returns all employees (emp_no), their department number, their start date, , and a new column 'is_current_employee' that is a 1 if the employee is still with the company and 0 if not. */
 
-USE employees; #using employees DB
+USE employees; /* using employees db */
+
 /* in the select section im including the department number, their start date, and a is_current_employee columns.  */
 SELECT  employees.emp_no, 
 		dept_no,
@@ -17,7 +18,7 @@ JOIN dept_emp on dept_emp.emp_no = employees.emp_no; -- Joined the department em
 
 /* Write a query that returns all employee names (previous and current), and a new column 'alpha_group' that returns 'A-H', 'I-Q', or 'R-Z' depending on the first letter of their last name. */
 
-USE employees; #using employees DB
+USE employees; /* using employees db */
 
 /* I am selecting all last names and creating a case group called aplha group */
 SELECT 
@@ -33,8 +34,8 @@ ORDER BY last_name;
 
 /* How many employees (current or previous) were born in each decade? */
 
-#using employees DB
-USE employees;
+USE employees; /* using employees db */
+
 /* In this select statement we have count and two if statements returning a 0 or 1 if its in the 50's or 60's */
 SELECT count(*),
 		-- Used an If statement instead of case because this seemed to make more sense to me. 
@@ -50,18 +51,27 @@ GROUP By 50s, 60s; -- grouping by 50s and 60s
 
 /* What is the current average salary for each of the following department groups: R&D, Sales & Marketing, Prod & QM, Finance & HR, Customer Service? */
 
-USE employees;
+USE employees; /* using employees db */
+
 SELECT 
-	DISTINCT CASE
-	WHEN departments.dept_name = 'Customer Service' THEN "Customer Service"
-	WHEN departments.dept_name = 'Research' OR departments.dept_name = 'Development' THEN 'R&D'
-	WHEN departments.dept_name = 'Sales' OR departments.dept_name = 'Marketing' THEN 'Sales & Marketing'
-	WHEN departments.dept_name = 'Production' OR departments.dept_name = 'Quality Management' THEN 'Prod & QM'
-	WHEN departments.dept_name = 'Finance' OR departments.dept_name = 'Human Resources' THEN 'Finance & HR'
+	DISTINCT CASE -- Used "Distinct" so that I didn't get duplicate department groups.  
+				   -- Try Removing "distinct" and see what happens. It may help to see what im talking about.
+
+	/* Filtered by each department and gave each row a name depending in which catagory it landed in.
+		Most had two departments but only customer service had one.  */
+	WHEN departments.dept_name = 'Customer Service' 																THEN "Customer Service"
+	WHEN departments.dept_name = 'Research' 			OR departments.dept_name = 'Development' 			THEN 'R&D'
+	WHEN departments.dept_name = 'Sales' 				OR departments.dept_name = 'Marketing' 				THEN 'Sales & Marketing'
+	WHEN departments.dept_name = 'Production' 			OR departments.dept_name = 'Quality Management'	THEN 'Prod & QM'
+	WHEN departments.dept_name = 'Finance' 				OR departments.dept_name = 'Human Resources' 		THEN 'Finance & HR'
 	END AS 'Department_Groups',
-	CASE 
-	WHEN departments.dept_name = 'Customer Service' THEN(
-			select avg(salary)
+	
+	CASE
+	
+	/* Each when statement returns the avg salary for each new row created */
+	WHEN departments.dept_name = 'Customer Service' THEN
+		(
+			SELECT AVG(salary)
 			FROM employees
 			JOIN dept_emp
 				ON dept_emp.emp_no = employees.emp_no
@@ -69,9 +79,14 @@ SELECT
 				ON salaries.emp_no = employees.emp_no
 			JOIN departments
 				ON departments.dept_no = dept_emp.dept_no
-			WHERE departments.dept_name = 'Customer Service' AND dept_emp.to_date > now())
-	WHEN departments.dept_name = 'Finance' OR departments.dept_name = 'Human Resources' THEN(
-			select avg(salary)
+			WHERE (departments.dept_name = 'Customer Service') 
+			AND (dept_emp.to_date > now() AND salaries.to_date > now())
+			/* Here I decided to filter through current employees and current salaries.  Just in case. */
+		)  
+	/* repeating steps above for each department group/row */
+ 	WHEN departments.dept_name = 'Finance' OR departments.dept_name = 'Human Resources' THEN
+		(
+			SELECT AVG(salary)
 			FROM employees
 			JOIN dept_emp
 				ON dept_emp.emp_no = employees.emp_no
@@ -79,8 +94,13 @@ SELECT
 				ON salaries.emp_no = employees.emp_no
 			JOIN departments
 				ON departments.dept_no = dept_emp.dept_no
-			WHERE (departments.dept_name = 'Finance' OR departments.dept_name = 'Human Resources') AND (dept_emp.to_date > now()))
-	WHEN departments.dept_name = 'Production' OR departments.dept_name = 'Quality Management' THEN (select avg(salary)
+			WHERE (departments.dept_name = 'Finance' OR departments.dept_name = 'Human Resources')
+				AND (dept_emp.to_date > now() AND salaries.to_date > now())
+		)
+			
+	WHEN departments.dept_name = 'Production' OR departments.dept_name = 'Quality Management' THEN
+		(
+			SELECT AVG(salary)
 			FROM employees
 			JOIN dept_emp
 				ON dept_emp.emp_no = employees.emp_no
@@ -88,8 +108,13 @@ SELECT
 				ON salaries.emp_no = employees.emp_no
 			JOIN departments
 				ON departments.dept_no = dept_emp.dept_no
-			WHERE (departments.dept_name = 'Production' OR departments.dept_name = 'Quality Management') AND dept_emp.to_date > now())
-	WHEN departments.dept_name = 'Sales' OR departments.dept_name = 'Marketing' THEN (select avg(salary)
+			WHERE (departments.dept_name = 'Production' OR departments.dept_name = 'Quality Management')
+				AND (dept_emp.to_date > now() AND salaries.to_date > now())
+		)
+			
+	WHEN departments.dept_name = 'Sales' OR departments.dept_name = 'Marketing' THEN
+		(
+			SELECT AVG(salary)
 			FROM employees
 			JOIN dept_emp
 				ON dept_emp.emp_no = employees.emp_no
@@ -97,8 +122,13 @@ SELECT
 				ON salaries.emp_no = employees.emp_no
 			JOIN departments
 				ON departments.dept_no = dept_emp.dept_no
-			WHERE (departments.dept_name = 'Sales' OR departments.dept_name = 'Marketing') AND dept_emp.to_date > now())
-	WHEN departments.dept_name = 'Research' OR departments.dept_name = 'Development' THEN (select avg(salary)
+			WHERE (departments.dept_name = 'Sales' OR departments.dept_name = 'Marketing') 
+				AND (dept_emp.to_date > now() AND salaries.to_date > now())
+		)
+			
+	WHEN departments.dept_name = 'Research' OR departments.dept_name = 'Development' THEN
+		(
+			SELECT AVG(salary)
 			FROM employees
 			JOIN dept_emp
 				ON dept_emp.emp_no = employees.emp_no
@@ -106,15 +136,16 @@ SELECT
 				ON salaries.emp_no = employees.emp_no
 			JOIN departments
 				ON departments.dept_no = dept_emp.dept_no
-			WHERE (departments.dept_name = 'Research' OR departments.dept_name = 'Development') AND dept_emp.to_date > now())	END AS 'AVG Salary'
+			WHERE  (departments.dept_name = 'Research' OR departments.dept_name = 'Development') 
+				AND	(dept_emp.to_date > now() AND salaries.to_date > now())
+		)
+	ELSE 'Bugs' /* No Bugs */	END AS 'AVG Salary'
+
 FROM employees
 JOIN dept_emp
-ON dept_emp.emp_no = employees.emp_no
+	ON dept_emp.emp_no = employees.emp_no
 JOIN salaries
-ON salaries.emp_no = employees.emp_no
+	ON salaries.emp_no = employees.emp_no
 JOIN departments
-ON departments.dept_no = dept_emp.dept_no
-Group By dept_name;
-
-
-
+	ON departments.dept_no = dept_emp.dept_no
+GROUP BY dept_name; /* Grouped by dept_name */
